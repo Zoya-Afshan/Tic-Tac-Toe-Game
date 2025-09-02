@@ -1,4 +1,4 @@
-let boxes = document.querySelectorAll(".box");
+    let boxes = document.querySelectorAll(".box");
 let resetBtn = document.querySelector("#reset-btn");
 let newGameBtn = document.querySelector("#new-btn");
 let msgContainer = document.querySelector(".msg-container");
@@ -12,10 +12,6 @@ let matchesLeft = document.getElementById("matchesLeft");
 let scoreboard = document.getElementById("scoreBoard");
 let seriesMsg = document.querySelector("#series-msg");
 let gameActive = false;
-let timerDisplay = document.getElementById("timer");
-let moveTimer;
-let timeLimit = 10; // seconds per move
-let currentTime = timeLimit;
 
 // NEW: Difficulty selection
 let difficultySelect = document.getElementById("difficulty"); // NEW
@@ -60,7 +56,6 @@ startBtn.addEventListener("click", () => {
   updateScoreboard();
   scoreboard.classList.remove("hide");
   resetGame();
-  startTimer();
 });
 
 const resetGame = () => {
@@ -69,17 +64,12 @@ const resetGame = () => {
   enableBoxes();
   msgContainer.classList.add("hide");
   seriesMsg.innerText = "";
-  //startTimer();
 };
-const stopTimer = () => {
-  clearInterval(moveTimer);
-  timerDisplay.textContent = ""; // Hide timer when game ends
-};
+
 const gameDraw = () => {
   msg.innerText = `Game was a Draw.`;
   msgContainer.classList.remove("hide");
   disableBoxes();
-  stopTimer();
   endMatch();
 };
 
@@ -98,7 +88,7 @@ const enableBoxes = () => {
 const showWinner = (winner, pattern) => {
   pattern.forEach((index) => boxes[index].classList.add("win"));
   disableBoxes();
- stopTimer();
+
   setTimeout(() => {
     msg.innerText = `Congratulations, Winner is ${winner}`;
     msgContainer.classList.remove("hide");
@@ -115,9 +105,8 @@ const checkWinner = () => {
       boxes[a].innerText &&
       boxes[a].innerText === boxes[b].innerText &&
       boxes[a].innerText === boxes[c].innerText
-    ) {stopTimer();
+    ) {
       showWinner(boxes[a].innerText, pattern);
-      
       return true;
     }
   }
@@ -174,7 +163,8 @@ const computerMove = () => {
     makeComputerMove(i);
   } 
   else if (difficulty === "hard") { // NEW
-    if (empty.length === 8) {
+  // >>>>> CHANGE START <<<<<
+  if (empty.length === 8) {
     // If human played first move
     if (boxes[4].innerText === "") {
       // Take center if available
@@ -187,19 +177,22 @@ const computerMove = () => {
     }
     return;
   }
-    let bestScore = -Infinity;
-    let bestMove;
-    for (let i of empty) {
-      boxes[i].innerText = "X";
-      let score = minimax(boxes, 0, false);
-      boxes[i].innerText = "";
-      if (score > bestScore) {
-        bestScore = score;
-        bestMove = i;
-      }
+  // >>>>> CHANGE END <<<<<
+
+  let bestScore = -Infinity;
+  let bestMove;
+  for (let i of empty) {
+    boxes[i].innerText = "X";
+    let score = minimax(boxes, 0, false);
+    boxes[i].innerText = "";
+    if (score > bestScore) {
+      bestScore = score;
+      bestMove = i;
     }
-    makeComputerMove(bestMove);
   }
+  makeComputerMove(bestMove);
+}
+
 };
 
 // NEW: Minimax algorithm
@@ -268,78 +261,29 @@ const updateScoreboard = () => {
   scoreX.innerText = playerXScore;
   matchesLeft.innerText = totalMatches - matchesPlayed;
 };
-function startTimer() {
-  clearInterval(moveTimer);
-  currentTime = timeLimit;
-  updateTimerDisplay();
 
-  moveTimer = setInterval(() => {
-    currentTime--;
-    updateTimerDisplay();
-
-    if (currentTime <= 0) {
-      clearInterval(moveTimer);
-      handleTimeout();
-    }
-  }, 1000);
-}
-
-function updateTimerDisplay() {
-  timerDisplay.textContent = `Time Left: ${currentTime}s`;
-}
-
-function handleTimeout() {
-  stopTimer();
-  if (vsComputer) {
-    // Human ran out of time
-    msg.innerText = `Time's up! Computer wins!`;
-    msgContainer.classList.remove("hide");
-    playerXScore++; // Computer = X
-  } else {
-    // Determine whose turn it was
-    let loser = turnO ? "O" : "X";
-    let winner = turnO ? "X" : "O";
-    msg.innerText = `Time's up! Player ${winner} wins!`;
-    msgContainer.classList.remove("hide");
-    if (winner === "O") playerOScore++;
-    else playerXScore++;
-  }
-  disableBoxes();
-  endMatch();
-}
 boxes.forEach((box) => {
   box.addEventListener("click", () => {
-    if (!gameActive) {
+     if (!gameActive) {
       alert("Please set number of games and click Start to begin.");
       return;
     }
-
+    
     if (box.innerText !== "") return;
 
     count++;
 
     if (vsComputer) {
       box.innerText = "O";
-      startTimer(); // Reset timer for Computer's upcoming move
-      if (!checkWinner() && count < 9) {
-        setTimeout(() => {
-          computerMove();
-          startTimer(); // Reset timer for Human's next move after Computer plays
-        }, 300);
-      } else if (count === 9) {
-        gameDraw();
-      }
+      if (!checkWinner() && count < 9) setTimeout(computerMove, 300);
+      else if (count === 9) gameDraw();
     } else {
       box.innerText = turnO ? "O" : "X";
-      startTimer(); // Reset timer for the next player
-      if (!checkWinner() && count === 9) {
-        gameDraw();
-      }
+      if (!checkWinner() && count === 9) gameDraw();
       turnO = !turnO;
     }
   });
 });
-
 
 window.addEventListener("DOMContentLoaded", () => {
   gameActive = false;
